@@ -8,5 +8,6 @@ namespace CoreBot.Data.Interfaces
     {
         Task<List<Stock>> FindStock();
         Task<List<Stock>> FindStockByFilters(string color, string garment);
+        Task<Stock> FindStockBySkuCode(string skuCode);
     }
 }
