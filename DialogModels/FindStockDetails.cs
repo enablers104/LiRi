@@ -7,5 +7,6 @@
         public string Size { get; set; }
         public string Style { get; set; }
         public string Brand { get; set; }
+        public string RouteStock { get; set; }
     }
 }
