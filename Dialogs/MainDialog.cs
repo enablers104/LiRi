@@ -63,9 +63,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         {
             if (!_luisRecognizer.IsConfigured)
             {
-                await stepContext.Context.SendActivityAsync(
-                    MessageFactory.Text("NOTE: LUIS is not configured. To enable all capabilities, add 'LuisAppId', 'LuisAPIKey' and 'LuisAPIHostName' to the appsettings.json file.", inputHint: InputHints.IgnoringInput), cancellationToken);
-
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("NOTE: LUIS is not configured. To enable all capabilities, add 'LuisAppId', 'LuisAPIKey' and 'LuisAPIHostName' to the appsettings.json file.", inputHint: InputHints.IgnoringInput), cancellationToken);
                 return await stepContext.NextAsync(null, cancellationToken);
             }
 
@@ -108,12 +106,14 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
                     // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(BookingDialog), bookingDetails, cancellationToken);
+
                 case LiriStockModel.Intent.GetWeather:
                     // We haven't implemented the GetWeatherDialog so we just display a TODO message.
                     var getWeatherMessageText = "TODO: get weather flow here";
                     var getWeatherMessage = MessageFactory.Text(getWeatherMessageText, getWeatherMessageText, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(getWeatherMessage, cancellationToken);
                     break;
+                    
                 case LiriStockModel.Intent.TFGStock:
                     // We haven't implemented the TFG so we just display a TODO message.
 
@@ -129,6 +129,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
                     // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(FindStockDialog), stockDetails, cancellationToken);
+
                 default:
                     // Catch all for unhandled intents
                     var didntUnderstandMessageText = $"Sorry, I didn't get that. Please try asking in a different way (intent was {luisResult.TopIntent().intent})";
@@ -192,30 +193,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 var messageText = $"You have requested stock from {result.Origin} to {result.Destination} on {travelDateMsg}";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
-            }
-
-            if (stepContext.Result is FindStockDetails stockResult)
-            {
-                //got all info needed for DB call AI  (build out AI object)
-                StringBuilder getTFGMessageText = new StringBuilder();
-
-                //grow this out
-                //var stockList = _stockRepo.FindStockByFilters(stockResult).Result;
-                var stockList = _stockRepo.FindStockByFilters(stockResult.Color, stockResult.Garment, stockResult.Size).Result;
-                if (stockList.Count == 0)
-                {
-                    getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
-                }
-                else
-                {
-                    getTFGMessageText.AppendLine("We have the following in stock: ");
-                    foreach (var stockItem in stockList)
-                    {
-                        getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-                    }
-                }                
-                var getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
             }
 
             // Restart the main dialog with a different message the second time around
