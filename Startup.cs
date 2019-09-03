@@ -17,6 +17,10 @@ namespace Microsoft.BotBuilderSamples
     public class Startup
     {
         // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// Configures the services.
+        /// </summary>
+        /// <param name="services">The services.</param>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
@@ -39,6 +43,9 @@ namespace Microsoft.BotBuilderSamples
             // Register the BookingDialog.
             services.AddSingleton<BookingDialog>();
 
+            // Register the FindStockDialogDialog.
+            services.AddSingleton<FindStockDialog>();
+
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();
 
@@ -49,6 +56,11 @@ namespace Microsoft.BotBuilderSamples
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Configures the specified application.
+        /// </summary>
+        /// <param name="app">The application.</param>
+        /// <param name="env">The env.</param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())

@@ -12,11 +12,13 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 {
     public class BookingDialog : CancelAndHelpDialog
     {
-        private const string DestinationStepMsgText = "Where would you like to travel to?";
-        private const string OriginStepMsgText = "Where are you traveling from?";
+        private const string DestinationStepMsgText = "Where would you like your stock items delivered to?";
+        private const string OriginStepMsgText = "Where would you like to get your stock items from?";
 
-        public BookingDialog()
-            : base(nameof(BookingDialog))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BookingDialog"/> class.
+        /// </summary>
+        public BookingDialog() : base(nameof(BookingDialog))
         {
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
@@ -34,6 +36,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
         }
 
+        /// <summary>
+        /// Destinations the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> DestinationStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var bookingDetails = (BookingDetails)stepContext.Options;
@@ -47,6 +55,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.NextAsync(bookingDetails.Destination, cancellationToken);
         }
 
+        /// <summary>
+        /// Origins the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> OriginStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var bookingDetails = (BookingDetails)stepContext.Options;
@@ -62,6 +76,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.NextAsync(bookingDetails.Origin, cancellationToken);
         }
 
+        /// <summary>
+        /// Travels the date step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> TravelDateStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var bookingDetails = (BookingDetails)stepContext.Options;
@@ -76,18 +96,30 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.NextAsync(bookingDetails.TravelDate, cancellationToken);
         }
 
+        /// <summary>
+        /// Confirms the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> ConfirmStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var bookingDetails = (BookingDetails)stepContext.Options;
 
             bookingDetails.TravelDate = (string)stepContext.Result;
 
-            var messageText = $"Please confirm, I have you traveling to: {bookingDetails.Destination} from: {bookingDetails.Origin} on: {bookingDetails.TravelDate}. Is this correct?";
+            var messageText = $"Please confirm, I would like to request an IBT (Inter Branch Transfer) from {bookingDetails.Origin} to {bookingDetails.Destination} on {bookingDetails.TravelDate}. Is this correct?";
             var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
 
             return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
+        /// <summary>
+        /// Finals the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             if ((bool)stepContext.Result)
@@ -100,6 +132,13 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.EndDialogAsync(null, cancellationToken);
         }
 
+        /// <summary>
+        /// Determines whether the specified timex is ambiguous.
+        /// </summary>
+        /// <param name="timex">The timex.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified timex is ambiguous; otherwise, <c>false</c>.
+        /// </returns>
         private static bool IsAmbiguous(string timex)
         {
             var timexProperty = new TimexProperty(timex);

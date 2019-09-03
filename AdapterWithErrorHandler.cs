@@ -13,7 +13,13 @@ namespace Microsoft.BotBuilderSamples
     public class AdapterWithErrorHandler : BotFrameworkHttpAdapter
     {
         private const string ErrorMsgText = "Sorry, it looks like something went wrong.";
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdapterWithErrorHandler"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="conversationState">State of the conversation.</param>
         public AdapterWithErrorHandler(IConfiguration configuration, ILogger<BotFrameworkHttpAdapter> logger, ConversationState conversationState = null)
             : base(configuration, logger)
         {

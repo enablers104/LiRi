@@ -13,11 +13,14 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 {
     public class DateResolverDialog : CancelAndHelpDialog
     {
-        private const string PromptMsgText = "When would you like to travel?";
-        private const string RepromptMsgText = "I'm sorry, to make your booking please enter a full travel date including Day Month and Year.";
-        
-        public DateResolverDialog(string id = null)
-            : base(id ?? nameof(DateResolverDialog))
+        private const string PromptMsgText = "When would you like to get the items?";
+        private const string RepromptMsgText = "I'm sorry, to make your request please enter a full IBT date including Day Month and Year.";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateResolverDialog"/> class.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public DateResolverDialog(string id = null) : base(id ?? nameof(DateResolverDialog))
         {
             AddDialog(new DateTimePrompt(nameof(DateTimePrompt), DateTimePromptValidator));
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
@@ -30,6 +33,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
         }
 
+        /// <summary>
+        /// Initials the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> InitialStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var timex = (string)stepContext.Options;
@@ -63,12 +72,24 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.NextAsync(new List<DateTimeResolution> { new DateTimeResolution { Timex = timex } }, cancellationToken);
         }
 
+        /// <summary>
+        /// Finals the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var timex = ((List<DateTimeResolution>)stepContext.Result)[0].Timex;
             return await stepContext.EndDialogAsync(timex, cancellationToken);
         }
 
+        /// <summary>
+        /// Dates the time prompt validator.
+        /// </summary>
+        /// <param name="promptContext">The prompt context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private static Task<bool> DateTimePromptValidator(PromptValidatorContext<IList<DateTimeResolution>> promptContext, CancellationToken cancellationToken)
         {
             if (promptContext.Recognized.Succeeded)

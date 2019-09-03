@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CoreBot.Data.Interfaces;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.BotBuilderSamples.DialogModels;
 
 namespace CoreBot.Data
 {
@@ -42,9 +43,29 @@ namespace CoreBot.Data
         /// <param name="color">The color.</param>
         /// <param name="garment">The garment.</param>
         /// <returns></returns>
-        public async Task<List<Stock>> FindStockByFilters(string color, string garment)
+        public async Task<List<Stock>> FindStockByFilters(string color, string garment, string size)
         {
-            string sql = $"SELECT * FROM dbo.tStock WHERE Color = '{color}' AND Garment = '{garment}'";
+            string sql = $"SELECT * FROM dbo.tStock WHERE Color = '{color}' AND Garment = '{garment}' AND size = '{size}'";
+            return await ExecWithConnAsync(async db => {
+                var resultList = await db.QueryAsync<Stock>(sql, commandType: System.Data.CommandType.Text).ConfigureAwait(false);
+                return resultList.ToList();
+            });
+        }
+
+        /// <summary>
+        /// Finds the stock by filters.
+        /// </summary>
+        /// <param name="findStockDetails">The find stock details.</param>
+        /// <returns></returns>
+        public async Task<List<Stock>> FindStockByFilters(FindStockDetails findStockDetails)
+        {
+            string sql = $"SELECT * FROM dbo.tStock WHERE Garment = '{findStockDetails.Garment}'";
+            if (!string.IsNullOrWhiteSpace(findStockDetails.Color))
+                sql = $"{sql} AND Color = '{findStockDetails.Color}'";
+
+            if (!string.IsNullOrWhiteSpace(findStockDetails.Size))
+                sql = $"{sql} AND Size = '{findStockDetails.Size}'";
+
             return await ExecWithConnAsync(async db => {
                 var resultList = await db.QueryAsync<Stock>(sql, commandType: System.Data.CommandType.Text).ConfigureAwait(false);
                 return resultList.ToList();

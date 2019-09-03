@@ -11,10 +11,9 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
-using Microsoft.BotBuilderSamples.Data;
-using System.Data;
-using System.Data.SqlClient;
 using CoreBot.Data;
+using Microsoft.BotBuilderSamples.DialogModels;
+using System.Text;
 
 namespace Microsoft.BotBuilderSamples.Dialogs
 {
@@ -24,8 +23,15 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         protected readonly ILogger Logger;
         private readonly StockRepository _stockRepo;
 
-        // Dependency injection uses this constructor to instantiate MainDialog
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, StockRepository stockRepository, ILogger<MainDialog> logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainDialog" /> class.
+        /// </summary>
+        /// <param name="luisRecognizer">The luis recognizer.</param>
+        /// <param name="bookingDialog">The booking dialog.</param>
+        /// <param name="findStockDialog">The find stock dialog.</param>
+        /// <param name="stockRepository">The stock repository.</param>
+        /// <param name="logger">The logger.</param>
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger)
             : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
@@ -35,6 +41,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(bookingDialog);
+            AddDialog(findStockDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -46,6 +53,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
         }
 
+        /// <summary>
+        /// Introes the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             if (!_luisRecognizer.IsConfigured)
@@ -57,11 +70,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
 
             // Use the text provided in FinalStepAsync or the default if it is the first time.
-            var messageText = stepContext.Options?.ToString() ?? "What can I help you with today?\nSay something like \"Book a flight from Paris to Berlin on March 22, 2020\"";
+            var messageText = stepContext.Options?.ToString() ?? "Hello! I am LIRI your friendly BOT. How can I help you today?";
             var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
+        /// <summary>
+        /// Acts the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             if (!_luisRecognizer.IsConfigured)
@@ -71,68 +90,45 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
 
             // Call LUIS and gather any potential booking details. (Note the TurnContext has the response to the prompt.)
-            var luisResult = await _luisRecognizer.RecognizeAsync<FlightBooking>(stepContext.Context, cancellationToken);
+            var luisResult = await _luisRecognizer.RecognizeAsync<LiriStockModel>(stepContext.Context, cancellationToken);
+
             switch (luisResult.TopIntent().intent)
             {
-                case FlightBooking.Intent.BookFlight:
-                    await ShowWarningForUnsupportedCities(stepContext.Context, luisResult, cancellationToken);
+                case LiriStockModel.Intent.BookFlight:
+                    await ShowWarningForUnsupportedBranches(stepContext.Context, luisResult, cancellationToken);
 
                     // Initialize BookingDetails with any entities we may have found in the response.
                     var bookingDetails = new BookingDetails()
                     {
                         // Get destination and origin from the composite entities arrays.
-                        Destination = luisResult.ToEntities.Airport,
-                        Origin = luisResult.FromEntities.Airport,
+                        Destination = luisResult.ToEntities.Branch,
+                        Origin = luisResult.FromEntities.Branch,
                         TravelDate = luisResult.TravelDate,
                     };
 
                     // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(BookingDialog), bookingDetails, cancellationToken);
-
-                case FlightBooking.Intent.GetWeather:
+                case LiriStockModel.Intent.GetWeather:
                     // We haven't implemented the GetWeatherDialog so we just display a TODO message.
                     var getWeatherMessageText = "TODO: get weather flow here";
                     var getWeatherMessage = MessageFactory.Text(getWeatherMessageText, getWeatherMessageText, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(getWeatherMessage, cancellationToken);
                     break;
-                    
-                case FlightBooking.Intent.TFGStock:
+                case LiriStockModel.Intent.TFGStock:
                     // We haven't implemented the TFG so we just display a TODO message.
 
-                    var stockList = _stockRepo.FindStockByFilters(luisResult.Color, luisResult.Garment).Result;
-
-                    //get db connection
-                    //SQLClient dbClient = new SQLClient();
-                    //DataTable griddata = new DataTable();
-
-                    //try
-                    //{
-                    //    //in the real world this would be in a sproc
-                    //    string SQL = "SELECT[LiriStockColor],[LiriStockSize],[LiriStockGarment],[LiriStockLocation],[LiriStockQty] FROM[dbo].[LiriStock]";
-                    //    SQL = SQL + "where LiriStockColor = @Color and LiriStockGarment = @Garment" ;
-
-                    //    List<SqlParameter> sqlparams = new List<SqlParameter>();
-                    //    sqlparams.Add(dbClient.BuildSQLParam("@Color", SqlDbType.VarChar, 0, luisResult.Color));
-                    //    sqlparams.Add(dbClient.BuildSQLParam("@Garment", SqlDbType.VarChar, 0, luisResult.Garment));
-
-                    //    griddata = dbClient.RunSQLReturnDT(SQL,sqlparams);
-                    //}
-                    //catch (Exception e)
-                    //{
-                    //    throw e;
-                    //}
-
-
-                    var getTFGMessageText = "we have the following in stock: " + Environment.NewLine;
-                    foreach (var _row in stockList)
+                    // Initialize StockDetails with any entities we may have found in the response.
+                    var stockDetails = new FindStockDetails()
                     {
-                        getTFGMessageText = getTFGMessageText + _row.Quantity + " at " + _row.Branch + Environment.NewLine;
-                    }
- 
-                    var getTFGMessage = MessageFactory.Text(getTFGMessageText, getTFGMessageText, InputHints.IgnoringInput);
-                    await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-                    break;                    
+                        // Get Stock Entities entities arrays.
+                        Garment = luisResult.Garment,
+                        Color = luisResult.Color,
+                        Brand = luisResult.Brand,
+                        Size = luisResult.Size                
+                    };
 
+                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
+                    return await stepContext.BeginDialogAsync(nameof(FindStockDialog), stockDetails, cancellationToken);
                 default:
                     // Catch all for unhandled intents
                     var didntUnderstandMessageText = $"Sorry, I didn't get that. Please try asking in a different way (intent was {luisResult.TopIntent().intent})";
@@ -147,30 +143,42 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         // Shows a warning if the requested From or To cities are recognized as entities but they are not in the Airport entity list.
         // In some cases LUIS will recognize the From and To composite entities as a valid cities but the From and To Airport values
         // will be empty if those entity values can't be mapped to a canonical item in the Airport.
-        private static async Task ShowWarningForUnsupportedCities(ITurnContext context, FlightBooking luisResult, CancellationToken cancellationToken)
+        /// <summary>
+        /// Shows the warning for unsupported branches.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="luisResult">The luis result.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private static async Task ShowWarningForUnsupportedBranches(ITurnContext context, LiriStockModel luisResult, CancellationToken cancellationToken)
         {
-            var unsupportedCities = new List<string>();
+            var unsupportedBranches = new List<string>();
 
             var fromEntities = luisResult.FromEntities;
-            if (!string.IsNullOrEmpty(fromEntities.From) && string.IsNullOrEmpty(fromEntities.Airport))
+            if (!string.IsNullOrEmpty(fromEntities.From) && string.IsNullOrEmpty(fromEntities.Branch))
             {
-                unsupportedCities.Add(fromEntities.From);
+                unsupportedBranches.Add(fromEntities.From);
             }
 
             var toEntities = luisResult.ToEntities;
-            if (!string.IsNullOrEmpty(toEntities.To) && string.IsNullOrEmpty(toEntities.Airport))
+            if (!string.IsNullOrEmpty(toEntities.To) && string.IsNullOrEmpty(toEntities.Branch))
             {
-                unsupportedCities.Add(toEntities.To);
+                unsupportedBranches.Add(toEntities.To);
             }
 
-            if (unsupportedCities.Any())
+            if (unsupportedBranches.Any())
             {
-                var messageText = $"Sorry but the following airports are not supported: {string.Join(',', unsupportedCities)}";
+                var messageText = $"Sorry but the following branches are not supported: {string.Join(',', unsupportedBranches)}";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await context.SendActivityAsync(message, cancellationToken);
             }
         }
 
+        /// <summary>
+        /// Finals the step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // If the child dialog ("BookingDialog") was cancelled, the user failed to confirm or if the intent wasn't BookFlight
@@ -178,14 +186,36 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             if (stepContext.Result is BookingDetails result)
             {
                 // Now we have all the booking details call the booking service.
-
                 // If the call to the booking service was successful tell the user.
-
                 var timeProperty = new TimexProperty(result.TravelDate);
                 var travelDateMsg = timeProperty.ToNaturalLanguage(DateTime.Now);
-                var messageText = $"I have you booked to {result.Destination} from {result.Origin} on {travelDateMsg}";
+                var messageText = $"You have requested stock from {result.Origin} to {result.Destination} on {travelDateMsg}";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
+            }
+
+            if (stepContext.Result is FindStockDetails stockResult)
+            {
+                //got all info needed for DB call AI  (build out AI object)
+                StringBuilder getTFGMessageText = new StringBuilder();
+
+                //grow this out
+                //var stockList = _stockRepo.FindStockByFilters(stockResult).Result;
+                var stockList = _stockRepo.FindStockByFilters(stockResult.Color, stockResult.Garment, stockResult.Size).Result;
+                if (stockList.Count == 0)
+                {
+                    getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
+                }
+                else
+                {
+                    getTFGMessageText.AppendLine("We have the following in stock: ");
+                    foreach (var stockItem in stockList)
+                    {
+                        getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
+                    }
+                }                
+                var getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
             }
 
             // Restart the main dialog with a different message the second time around

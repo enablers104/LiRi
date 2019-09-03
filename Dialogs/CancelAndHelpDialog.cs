@@ -14,11 +14,20 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private const string HelpMsgText = "Show help here";
         private const string CancelMsgText = "Cancelling...";
 
-        public CancelAndHelpDialog(string id)
-            : base(id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CancelAndHelpDialog"/> class.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public CancelAndHelpDialog(string id) : base(id)
         {
         }
 
+        /// <summary>
+        /// Called when [continue dialog asynchronous].
+        /// </summary>
+        /// <param name="innerDc">The inner dc.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         protected override async Task<DialogTurnResult> OnContinueDialogAsync(DialogContext innerDc, CancellationToken cancellationToken = default)
         {
             var result = await InterruptAsync(innerDc, cancellationToken);
@@ -30,6 +39,12 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await base.OnContinueDialogAsync(innerDc, cancellationToken);
         }
 
+        /// <summary>
+        /// Interrupts the asynchronous.
+        /// </summary>
+        /// <param name="innerDc">The inner dc.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         private async Task<DialogTurnResult> InterruptAsync(DialogContext innerDc, CancellationToken cancellationToken)
         {
             if (innerDc.Context.Activity.Type == ActivityTypes.Message)

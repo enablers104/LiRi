@@ -18,12 +18,20 @@ namespace Microsoft.BotBuilderSamples.Controllers
         private readonly IBotFrameworkHttpAdapter Adapter;
         private readonly IBot Bot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BotController"/> class.
+        /// </summary>
+        /// <param name="adapter">The adapter.</param>
+        /// <param name="bot">The bot.</param>
         public BotController(IBotFrameworkHttpAdapter adapter, IBot bot)
         {
             Adapter = adapter;
             Bot = bot;
         }
 
+        /// <summary>
+        /// Posts the asynchronous.
+        /// </summary>
         [HttpPost]
         public async Task PostAsync()
         {
