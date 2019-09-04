@@ -29,9 +29,10 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="luisRecognizer">The luis recognizer.</param>
         /// <param name="bookingDialog">The booking dialog.</param>
         /// <param name="findStockDialog">The find stock dialog.</param>
+        /// <param name="accountDialog">The account dialog.</param>
         /// <param name="stockRepository">The stock repository.</param>
         /// <param name="logger">The logger.</param>
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, AccountDialog accountDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
@@ -41,6 +42,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(bookingDialog);
             AddDialog(findStockDialog);
+            AddDialog(accountDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -112,7 +114,15 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                     var getWeatherMessage = MessageFactory.Text(getWeatherMessageText, getWeatherMessageText, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(getWeatherMessage, cancellationToken);
                     break;
-                    
+
+                //case LiriStockModel.Intent.TFGAccount:
+                //    var accountDetails = new FindAccountDetails
+                //    {
+
+                //    };
+
+                //    return await stepContext.BeginDialogAsync(nameof(AccountDialog), accountDetails, cancellationToken);
+
                 case LiriStockModel.Intent.TFGStock:
                     // We haven't implemented the TFG so we just display a TODO message.
 
