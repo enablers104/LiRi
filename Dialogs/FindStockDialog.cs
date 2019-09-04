@@ -11,6 +11,8 @@ using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
 using Microsoft.BotBuilderSamples.DialogModels;
 using System.Text;
 using CoreBot.Data;
+using AdaptiveCards;
+using CoreBot.Entities;
 
 namespace Microsoft.BotBuilderSamples.Dialogs
 {
@@ -26,7 +28,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <summary>
         /// Initializes a new instance of the <see cref="FindStockDialog"/> class.
         /// </summary>
-        public FindStockDialog(BookingDialog bookingDialog,StockRepository stockRepository) : base(nameof(FindStockDialog))
+        public FindStockDialog(BookingDialog bookingDialog, StockRepository stockRepository) : base(nameof(FindStockDialog))
         {
             _stockRepo = stockRepository;
 
@@ -65,7 +67,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             return await stepContext.NextAsync(StockDetails.Garment, cancellationToken);
         }
 
-
         /// <summary>
         /// Colors the step asynchronous.
         /// </summary>
@@ -86,7 +87,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             return await stepContext.NextAsync(StockDetails.Color, cancellationToken);
         }
-
 
         /// <summary>
         /// Sizes the step asynchronous.
@@ -110,10 +110,65 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         }
 
 
-        private async Task<DialogTurnResult>RouteStockStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        //private async Task<DialogTurnResult>RouteStockStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        //{
+        //    var StockDetails = (FindStockDetails)stepContext.Options;
+
+        //    StockDetails.Size = (string)stepContext.Result;
+
+        //    //do call here and redirect if we must relocate stock
+
+        //    //got all info needed for DB call AI  (build out AI object)
+        //    StringBuilder getTFGMessageText = new StringBuilder();
+
+        //    Activity getTFGMessage;
+
+        //    //grow this out
+        //    var stockList = _stockRepo.FindStockByFilters(StockDetails).Result;
+        //    if (stockList.Count == 0)
+        //    {
+        //        getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
+
+        //        getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+        //        await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
+
+        //        return await stepContext.EndDialogAsync(StockDetails, cancellationToken);
+        //    }
+        //    else
+        //    {
+        //        getTFGMessageText.AppendLine("We have the following in stock: ");
+        //        foreach (var stockItem in stockList)
+        //        {
+        //            getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
+        //        }
+
+        //        getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+        //        await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
+
+
+        //        if (stockList.Count > 1)
+        //        {
+        //            getTFGMessage = MessageFactory.Text(RouteStockStepMsgText, RouteStockStepMsgText, InputHints.ExpectingInput);
+        //            return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = getTFGMessage }, cancellationToken);
+        //        }
+        //    }
+
+
+        //    return await stepContext.NextAsync("No", cancellationToken);
+        //}
+
+
+
+
+        /// <summary>
+        /// Routes the stock step asynchronous.
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<DialogTurnResult> RouteStockStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var StockDetails = (FindStockDetails)stepContext.Options;
-
             StockDetails.Size = (string)stepContext.Result;
 
             //do call here and redirect if we must relocate stock
@@ -136,15 +191,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
             else
             {
-                getTFGMessageText.AppendLine("We have the following in stock: ");
-                foreach (var stockItem in stockList)
-                {
-                    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-                }
+                //getTFGMessageText.AppendLine("We have the following in stock: ");
+                //foreach (var stockItem in stockList)
+                //{
+                //    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
+                //}
+                //getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+                //await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
 
-                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-
+                var messageCard = CreateStockAdaptiveCard(GetFacts(stockList));
+                var response = MessageFactory.Attachment(messageCard);
+                await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
                 if (stockList.Count > 1)
                 {
@@ -153,12 +210,8 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 }
             }
 
-
             return await stepContext.NextAsync("No", cancellationToken);
         }
-
-
-
 
         /// <summary>
         /// Finals the step asynchronous.
@@ -168,12 +221,24 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <returns></returns>
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-
             var StockDetails = (FindStockDetails)stepContext.Options;
 
-            var doroute = (string)stepContext.Result;
+            bool doroute = false;
 
-            if(doroute.ToUpper() == "YES" || doroute.ToUpper() == "Y")
+            if (stepContext.Result is string result)
+            {
+                string tmp = (string)stepContext.Result;
+                if (tmp.ToUpper() == "YES" || tmp.ToUpper() == "Y")
+                {
+                    doroute = true;
+                }
+            }
+            else
+            {
+                doroute = (bool)stepContext.Result;
+            }
+
+            if(doroute)
             {
                 // Initialize BookingDetails with any entities we may have found in the response.
                 var bookingDetails = new BookingDetails()
@@ -188,6 +253,77 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
 
             return await stepContext.EndDialogAsync(StockDetails, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates the stock adaptive card.
+        /// </summary>
+        /// <param name="facts">The facts.</param>
+        /// <returns></returns>
+        private Attachment CreateStockAdaptiveCard(List<AdaptiveFact> facts)
+        {
+            var card = new AdaptiveCard("1.0");
+            List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
+            {
+                new AdaptiveColumnSet
+                {
+                    Columns = new List<AdaptiveColumn>()
+                    {
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "We have the following in stock:",
+                                    Weight = AdaptiveTextWeight.Bolder,
+                                    Separator = true,
+                                    Size = AdaptiveTextSize.Medium,
+                                },
+                                new AdaptiveFactSet
+                                {
+                                    Facts = facts
+                                }
+                            },
+                            Separator = true
+                        }
+                    }
+                }
+            };
+
+            AdaptiveContainer container = new AdaptiveContainer
+            {
+                Items = adaptiveElements
+            };
+
+            card.Body.Add(container);
+
+            var attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
+
+            return attachment;
+        }
+
+        /// <summary>
+        /// Gets the facts.
+        /// </summary>
+        /// <param name="stocks">The stocks.</param>
+        /// <returns></returns>
+        private List<AdaptiveFact> GetFacts(List<Stock> stocks)
+        {
+            List<AdaptiveFact> facts = new List<AdaptiveFact>();
+            foreach (var stock in stocks)
+            {
+                facts.Add(new AdaptiveFact
+                {
+                    Title = stock.Quantity.ToString(),
+                    Value = stock.Branch
+                });
+            }
+            return facts;
         }
     }
 }
