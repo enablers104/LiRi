@@ -140,14 +140,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
             else
             {
-                //getTFGMessageText.AppendLine("We have the following in stock: ");
-                //foreach (var stockItem in stockList)
-                //{
-                //    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-                //}
-                //getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                //await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-
                 var messageCard = CreateStockAdaptiveCard(GetFacts(stockList));
                 var response = MessageFactory.Attachment(messageCard);
                 await stepContext.Context.SendActivityAsync(response, cancellationToken);
@@ -205,12 +197,38 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                         {
                             Items = new List<AdaptiveElement>
                             {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/chatbot/blob/master/Images/Logo.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "Invetory search",
+                                    Spacing = AdaptiveSpacing.Medium,
+                                    Size = AdaptiveTextSize.Default,
+                                    Weight = AdaptiveTextWeight.Bolder,
+                                    Wrap = true,
+                                    MaxLines = 0
+                                },
                                 new AdaptiveTextBlock
                                 {
                                     Text = "We have the following in stock:",
-                                    Weight = AdaptiveTextWeight.Bolder,
-                                    Separator = true,
-                                    Size = AdaptiveTextSize.Medium,
+                                    Size = AdaptiveTextSize.Default,
+                                    IsSubtle = true,
+                                    Wrap = true,
+                                    MaxLines = 0                                    
+                                },
+                                new AdaptiveFactSet
+                                {
+                                    Facts = new List<AdaptiveFact>
+                                    {
+                                        new AdaptiveFact
+                                        {
+                                            Title = "Quantity",
+                                            Value = "**Branch**"
+                                        }
+                                    }
                                 },
                                 new AdaptiveFactSet
                                 {
