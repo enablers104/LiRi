@@ -23,13 +23,10 @@ namespace Microsoft.BotBuilderSamples
         /// </summary>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging((logging) =>
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) => WebHost.CreateDefaultBuilder(args).ConfigureLogging((logging) =>
                 {
                     logging.AddDebug();
                     logging.AddConsole();
-                })
-                .UseStartup<Startup>();
+                }).UseStartup<Startup>();
     }
 }

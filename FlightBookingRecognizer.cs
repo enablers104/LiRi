@@ -42,8 +42,7 @@ namespace Microsoft.BotBuilderSamples
         /// <returns>
         /// Analysis of utterance.
         /// </returns>
-        public virtual async Task<RecognizerResult> RecognizeAsync(ITurnContext turnContext, CancellationToken cancellationToken)
-            => await _recognizer.RecognizeAsync(turnContext, cancellationToken);
+        public virtual async Task<RecognizerResult> RecognizeAsync(ITurnContext turnContext, CancellationToken cancellationToken) => await _recognizer.RecognizeAsync(turnContext, cancellationToken);
 
         /// <summary>
         /// Runs an utterance through a recognizer and returns a strongly-typed recognizer result.
@@ -54,7 +53,6 @@ namespace Microsoft.BotBuilderSamples
         /// <returns>
         /// Analysis of utterance.
         /// </returns>
-        public virtual async Task<T> RecognizeAsync<T>(ITurnContext turnContext, CancellationToken cancellationToken)
-            where T : IRecognizerConvert, new() => await _recognizer.RecognizeAsync<T>(turnContext, cancellationToken);
+        public virtual async Task<T> RecognizeAsync<T>(ITurnContext turnContext, CancellationToken cancellationToken) where T : IRecognizerConvert, new() => await _recognizer.RecognizeAsync<T>(turnContext, cancellationToken);
     }
 }

@@ -31,8 +31,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="findStockDialog">The find stock dialog.</param>
         /// <param name="stockRepository">The stock repository.</param>
         /// <param name="logger">The logger.</param>
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger)
-            : base(nameof(MainDialog))
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
@@ -63,9 +62,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         {
             if (!_luisRecognizer.IsConfigured)
             {
-                await stepContext.Context.SendActivityAsync(
-                    MessageFactory.Text("NOTE: LUIS is not configured. To enable all capabilities, add 'LuisAppId', 'LuisAPIKey' and 'LuisAPIHostName' to the appsettings.json file.", inputHint: InputHints.IgnoringInput), cancellationToken);
-
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("NOTE: LUIS is not configured. To enable all capabilities, add 'LuisAppId', 'LuisAPIKey' and 'LuisAPIHostName' to the appsettings.json file.", inputHint: InputHints.IgnoringInput), cancellationToken);
                 return await stepContext.NextAsync(null, cancellationToken);
             }
 
@@ -196,29 +193,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
             }
-
-            //if (stepContext.Result is FindStockDetails stockresult)
-            //{
-            //    //got all info needed for DB call AI  (build out AI object)
-            //    StringBuilder getTFGMessageText = new StringBuilder();
-
-            //    //grow this out
-            //    var stockList = _stockRepo.FindStockByFilters(stockresult).Result;
-            //    if(stockList.Count == 0)
-            //    {
-            //        getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
-            //    }
-            //    else
-            //    {
-            //        getTFGMessageText.AppendLine("We have the following in stock: ");
-            //        foreach (var stockItem in stockList)
-            //        {
-            //            getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-            //        }
-            //    }                
-            //    var getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-            //    await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-            //}
 
             // Restart the main dialog with a different message the second time around
             var promptMessage = "What else can I do for you?";
