@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using CoreBot.Data;
-using CoreBot.Data.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -45,6 +44,9 @@ namespace Microsoft.BotBuilderSamples
 
             // Register the FindStockDialogDialog.
             services.AddSingleton<FindStockDialog>();
+
+            // Register the FindStockDialogDialog.
+            services.AddSingleton<AccountDialog>();
 
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();
