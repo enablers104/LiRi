@@ -163,8 +163,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var StockDetails = (FindStockDetails)stepContext.Options;
-            var doroute = (string)stepContext.Result;
-            if(doroute.ToUpper() == "YES" || doroute.ToUpper() == "Y")
+            var confirmed = false;
+            if (stepContext.Result is string result)
+            {
+                confirmed = ((string)stepContext.Result).ToUpper() == "YES";
+            }
+            else
+            {
+                confirmed = (bool)stepContext.Result;
+            }
+
+            if (confirmed)
             {
                 // Initialize BookingDetails with any entities we may have found in the response.
                 var bookingDetails = new BookingDetails()
