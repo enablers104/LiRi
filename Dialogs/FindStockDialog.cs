@@ -11,6 +11,8 @@ using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
 using Microsoft.BotBuilderSamples.DialogModels;
 using System.Text;
 using CoreBot.Data;
+using AdaptiveCards;
+using CoreBot.Entities;
 
 namespace Microsoft.BotBuilderSamples.Dialogs
 {
@@ -138,14 +140,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
             else
             {
-                getTFGMessageText.AppendLine("We have the following in stock: ");
-                foreach (var stockItem in stockList)
-                {
-                    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-                }
+                //getTFGMessageText.AppendLine("We have the following in stock: ");
+                //foreach (var stockItem in stockList)
+                //{
+                //    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
+                //}
+                //getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+                //await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
 
-                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
+                var messageCard = CreateStockAdaptiveCard(GetFacts(stockList));
+                var response = MessageFactory.Attachment(messageCard);
+                await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
                 if (stockList.Count > 1)
                 {
@@ -180,6 +185,77 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 return await stepContext.BeginDialogAsync(nameof(BookingDialog), bookingDetails, cancellationToken);
             }
             return await stepContext.EndDialogAsync(StockDetails, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates the stock adaptive card.
+        /// </summary>
+        /// <param name="facts">The facts.</param>
+        /// <returns></returns>
+        private Attachment CreateStockAdaptiveCard(List<AdaptiveFact> facts)
+        {
+            var card = new AdaptiveCard("1.0");
+            List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
+            {
+                new AdaptiveColumnSet
+                {
+                    Columns = new List<AdaptiveColumn>()
+                    {
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "We have the following in stock:",
+                                    Weight = AdaptiveTextWeight.Bolder,
+                                    Separator = true,
+                                    Size = AdaptiveTextSize.Medium,
+                                },
+                                new AdaptiveFactSet
+                                {
+                                    Facts = facts
+                                }
+                            },
+                            Separator = true
+                        }
+                    }
+                }
+            };
+
+            AdaptiveContainer container = new AdaptiveContainer
+            {
+                Items = adaptiveElements
+            };
+
+            card.Body.Add(container);
+
+            var attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
+
+            return attachment;
+        }
+
+        /// <summary>
+        /// Gets the facts.
+        /// </summary>
+        /// <param name="stocks">The stocks.</param>
+        /// <returns></returns>
+        private List<AdaptiveFact> GetFacts(List<Stock> stocks)
+        {
+            List<AdaptiveFact> facts = new List<AdaptiveFact>();
+            foreach (var stock in stocks)
+            {
+                facts.Add(new AdaptiveFact
+                {
+                    Title = stock.Quantity.ToString(),
+                    Value = stock.Branch
+                });
+            }
+            return facts;
         }
     }
 }

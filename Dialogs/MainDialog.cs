@@ -31,8 +31,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="findStockDialog">The find stock dialog.</param>
         /// <param name="stockRepository">The stock repository.</param>
         /// <param name="logger">The logger.</param>
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger)
-            : base(nameof(MainDialog))
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
