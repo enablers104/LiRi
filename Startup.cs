@@ -45,8 +45,11 @@ namespace Microsoft.BotBuilderSamples
             // Register the FindStockDialogDialog.
             services.AddSingleton<FindStockDialog>();
 
-            // Register the FindStockDialogDialog.
+            // Register the AccountDialog.
             services.AddSingleton<AccountDialog>();
+
+            // Register the HRDialogDialog.
+            services.AddSingleton<HRDialog>();
 
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();

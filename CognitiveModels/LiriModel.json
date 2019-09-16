@@ -1,0 +1,548 @@
+{
+  "luis_schema_version": "3.2.0",
+  "versionId": "0.1",
+  "name": "LiriStock-8c56",
+  "desc": "Luis Model for CoreBot",
+  "culture": "en-us",
+  "tokenizerVersion": "1.0.0",
+  "intents": [
+    {
+      "name": "BookIBT"
+    },
+    {
+      "name": "Cancel"
+    },
+    {
+      "name": "GetWeather"
+    },
+    {
+      "name": "None"
+    },
+    {
+      "name": "TFGAccount"
+    },
+    {
+      "name": "TFGHR"
+    },
+    {
+      "name": "TFGStock"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Brand",
+      "roles": []
+    },
+    {
+      "name": "Color",
+      "roles": []
+    },
+    {
+      "name": "EmployeeNumber",
+      "roles": []
+    },
+    {
+      "name": "FirstName",
+      "roles": []
+    },
+    {
+      "name": "Garment",
+      "roles": []
+    },
+    {
+      "name": "IDNumber",
+      "roles": []
+    },
+    {
+      "name": "LastName",
+      "roles": []
+    },
+    {
+      "name": "Size",
+      "roles": []
+    },
+    {
+      "name": "Title",
+      "roles": []
+    }
+  ],
+  "composites": [
+    {
+      "name": "From",
+      "children": [
+        "Airport"
+      ],
+      "roles": []
+    },
+    {
+      "name": "To",
+      "children": [
+        "Airport"
+      ],
+      "roles": []
+    }
+  ],
+  "closedLists": [
+    {
+      "name": "Airport",
+      "subLists": [
+        {
+          "canonicalForm": "Paris",
+          "list": [
+            "paris",
+            "cdg"
+          ]
+        },
+        {
+          "canonicalForm": "London",
+          "list": [
+            "london",
+            "lhr"
+          ]
+        },
+        {
+          "canonicalForm": "Berlin",
+          "list": [
+            "berlin",
+            "txl"
+          ]
+        },
+        {
+          "canonicalForm": "New York",
+          "list": [
+            "new york",
+            "jfk"
+          ]
+        },
+        {
+          "canonicalForm": "Seattle",
+          "list": [
+            "seattle",
+            "sea"
+          ]
+        }
+      ],
+      "roles": []
+    },
+    {
+      "name": "Branch",
+      "subLists": [
+        {
+          "canonicalForm": "Parow",
+          "list": [
+            "parow",
+            "a"
+          ]
+        },
+        {
+          "canonicalForm": "Grabouw",
+          "list": [
+            "grabouw",
+            "b"
+          ]
+        }
+      ],
+      "roles": []
+    }
+  ],
+  "patternAnyEntities": [],
+  "regex_entities": [],
+  "prebuiltEntities": [
+    {
+      "name": "datetimeV2",
+      "roles": []
+    },
+    {
+      "name": "phonenumber",
+      "roles": []
+    }
+  ],
+  "model_features": [
+    {
+      "name": "Garment",
+      "mode": true,
+      "words": "running shoes,shorts",
+      "activated": true
+    },
+    {
+      "name": "Size",
+      "mode": true,
+      "words": "l,m,s,xs,xxs,xl,xxl",
+      "activated": true
+    }
+  ],
+  "regex_features": [],
+  "patterns": [],
+  "utterances": [
+    {
+      "text": "book a hotel in new york",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "book a restaurant",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "bye",
+      "intent": "Cancel",
+      "entities": []
+    },
+    {
+      "text": "cancel booking",
+      "intent": "Cancel",
+      "entities": []
+    },
+    {
+      "text": "exit",
+      "intent": "Cancel",
+      "entities": []
+    },
+    {
+      "text": "find an airport near me",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "find staff with id 345325",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "IDNumber",
+          "startPos": 19,
+          "endPos": 24
+        }
+      ]
+    },
+    {
+      "text": "find staff with number 3542",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "EmployeeNumber",
+          "startPos": 23,
+          "endPos": 26
+        }
+      ]
+    },
+    {
+      "text": "ibt",
+      "intent": "BookIBT",
+      "entities": []
+    },
+    {
+      "text": "i'd like a jacket in the colour red in size 12",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Garment",
+          "startPos": 11,
+          "endPos": 16
+        },
+        {
+          "entity": "Color",
+          "startPos": 32,
+          "endPos": 34
+        },
+        {
+          "entity": "Size",
+          "startPos": 44,
+          "endPos": 45
+        }
+      ]
+    },
+    {
+      "text": "i'd like to open an account",
+      "intent": "TFGAccount",
+      "entities": []
+    },
+    {
+      "text": "i'd like to rent a car",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "ignore",
+      "intent": "Cancel",
+      "entities": []
+    },
+    {
+      "text": "i'm interested in a shirt in size 12",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Garment",
+          "startPos": 20,
+          "endPos": 24
+        },
+        {
+          "entity": "Size",
+          "startPos": 34,
+          "endPos": 35
+        }
+      ]
+    },
+    {
+      "text": "i'm looking for a greem shirt size m",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Color",
+          "startPos": 18,
+          "endPos": 22
+        },
+        {
+          "entity": "Garment",
+          "startPos": 24,
+          "endPos": 28
+        },
+        {
+          "entity": "Size",
+          "startPos": 35,
+          "endPos": 35
+        }
+      ]
+    },
+    {
+      "text": "i'm looking for a red shirt",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Color",
+          "startPos": 18,
+          "endPos": 20
+        },
+        {
+          "entity": "Garment",
+          "startPos": 22,
+          "endPos": 26
+        }
+      ]
+    },
+    {
+      "text": "i'm looking for a shirt",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Garment",
+          "startPos": 18,
+          "endPos": 22
+        }
+      ]
+    },
+    {
+      "text": "i'm looking for clothing",
+      "intent": "TFGStock",
+      "entities": []
+    },
+    {
+      "text": "i'm looking for running shoes",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Garment",
+          "startPos": 16,
+          "endPos": 28
+        }
+      ]
+    },
+    {
+      "text": "i'm looking for something green",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Color",
+          "startPos": 26,
+          "endPos": 30
+        }
+      ]
+    },
+    {
+      "text": "i'm wanting a green shorts",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Color",
+          "startPos": 14,
+          "endPos": 18
+        },
+        {
+          "entity": "Garment",
+          "startPos": 20,
+          "endPos": 25
+        }
+      ]
+    },
+    {
+      "text": "looking for employee 1234",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "EmployeeNumber",
+          "startPos": 21,
+          "endPos": 24
+        }
+      ]
+    },
+    {
+      "text": "looking for employee with id 3241",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "IDNumber",
+          "startPos": 29,
+          "endPos": 32
+        }
+      ]
+    },
+    {
+      "text": "looking for staff with id 1234",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "IDNumber",
+          "startPos": 26,
+          "endPos": 29
+        }
+      ]
+    },
+    {
+      "text": "looking for staff with number 1234",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "EmployeeNumber",
+          "startPos": 30,
+          "endPos": 33
+        }
+      ]
+    },
+    {
+      "text": "looking for stall with empl # 213432",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "EmployeeNumber",
+          "startPos": 30,
+          "endPos": 35
+        }
+      ]
+    },
+    {
+      "text": "looking for stall with empl number 213432",
+      "intent": "TFGHR",
+      "entities": [
+        {
+          "entity": "EmployeeNumber",
+          "startPos": 35,
+          "endPos": 40
+        }
+      ]
+    },
+    {
+      "text": "move stock from a to b",
+      "intent": "BookIBT",
+      "entities": []
+    },
+    {
+      "text": "open an account for mrs jane dou with id = 123456 and phone number = +0832456",
+      "intent": "TFGAccount",
+      "entities": [
+        {
+          "entity": "Title",
+          "startPos": 20,
+          "endPos": 22
+        },
+        {
+          "entity": "FirstName",
+          "startPos": 24,
+          "endPos": 27
+        },
+        {
+          "entity": "LastName",
+          "startPos": 29,
+          "endPos": 31
+        },
+        {
+          "entity": "IDNumber",
+          "startPos": 43,
+          "endPos": 48
+        }
+      ]
+    },
+    {
+      "text": "please open an account, i am mr john smith id 123456 and my cell is +27832556643",
+      "intent": "TFGAccount",
+      "entities": [
+        {
+          "entity": "Title",
+          "startPos": 29,
+          "endPos": 30
+        },
+        {
+          "entity": "FirstName",
+          "startPos": 32,
+          "endPos": 35
+        },
+        {
+          "entity": "LastName",
+          "startPos": 37,
+          "endPos": 41
+        },
+        {
+          "entity": "IDNumber",
+          "startPos": 46,
+          "endPos": 51
+        }
+      ]
+    },
+    {
+      "text": "please open and account",
+      "intent": "TFGAccount",
+      "entities": []
+    },
+    {
+      "text": "size m",
+      "intent": "TFGStock",
+      "entities": [
+        {
+          "entity": "Size",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "tfgstock",
+      "intent": "TFGStock",
+      "entities": []
+    },
+    {
+      "text": "what's the forecast for this friday?",
+      "intent": "GetWeather",
+      "entities": []
+    },
+    {
+      "text": "what's the weather like for tomorrow",
+      "intent": "GetWeather",
+      "entities": []
+    },
+    {
+      "text": "what's the weather like in new york",
+      "intent": "GetWeather",
+      "entities": []
+    },
+    {
+      "text": "what's the weather like?",
+      "intent": "GetWeather",
+      "entities": []
+    },
+    {
+      "text": "winter is coming",
+      "intent": "None",
+      "entities": []
+    }
+  ],
+  "settings": []
+}

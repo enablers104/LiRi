@@ -6,7 +6,6 @@ using Microsoft.Bot.Builder;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.BotBuilderSamples.Dialogs;
 using Microsoft.BotBuilderSamples.DialogModels;
 
 namespace Microsoft.BotBuilderSamples.Dialogs
@@ -150,12 +149,14 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private async Task<DialogTurnResult> ConfirmationStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var accountDetails = (FindAccountDetails)stepContext.Options;
+            accountDetails.CellphoneNumber = (string)stepContext.Result;
+
             var messageCard = CreateAccountDetailsAdaptiveCard(accountDetails);
             var response = MessageFactory.Attachment(messageCard);
             await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
             var promptMessage = MessageFactory.Text(FinalConfirmationMsgText, FinalConfirmationMsgText, InputHints.ExpectingInput);
-            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
         /// <summary>

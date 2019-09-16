@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using System.Threading;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
 using Microsoft.BotBuilderSamples.DialogModels;
 using System.Text;
 using CoreBot.Data;
@@ -18,10 +16,11 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 {
     public class FindStockDialog : CancelAndHelpDialog
     {
-        private const string GarmentStepMsgText = "What Germent are you looking for?";
+        private const string GarmentStepMsgText = "What Garment are you looking for?";
         private const string ColorStepMsgText = "What Colour are you looking for?";
         private const string SizeStepMsgText = "What Size are you looking for?";
         private const string RouteStockStepMsgText = "Would you like to reroute stock?";
+        private const string BrandStepMsgText = "What Brand are you looking for?";
 
         private readonly StockRepository _stockRepo;
 
@@ -38,6 +37,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 GarmentStepAsync,
+                BrandStepAsync,
                 ColorStepAsync,
                 SizeStepAsync,
                 RouteStockStepAsync,
@@ -68,6 +68,41 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         }
 
         /// <summary>
+        /// Brand the step asynchronous
+        /// </summary>
+        /// <param name="stepContext">The step context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task<DialogTurnResult> BrandStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var StockDetails = (FindStockDetails)stepContext.Options;
+
+            StockDetails.Garment = (string)stepContext.Result;            
+
+            if (StockDetails.Brand == null)
+            {
+                StringBuilder getTFGMessageText = new StringBuilder();
+                Activity getTFGMessage;
+
+                var BrandList = _stockRepo.FindBrandList().Result;
+
+                getTFGMessageText.AppendLine("We have the following Brands: ");
+                foreach (var stockItem in BrandList)
+                {
+                    getTFGMessageText.AppendLine($"{stockItem.Brand}");
+                }
+
+                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
+
+                var promptMessage = MessageFactory.Text(BrandStepMsgText, BrandStepMsgText, InputHints.ExpectingInput);
+                return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+            }
+
+            return await stepContext.NextAsync(StockDetails.Brand, cancellationToken);
+        }
+
+        /// <summary>
         /// Colors the step asynchronous.
         /// </summary>
         /// <param name="stepContext">The step context.</param>
@@ -77,7 +112,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         {
             var StockDetails = (FindStockDetails)stepContext.Options;
 
-            StockDetails.Garment = (string)stepContext.Result;
+            StockDetails.Brand = CheckForAll((string)stepContext.Result);
 
             if (StockDetails.Color == null)
             {
@@ -98,7 +133,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         {
             var StockDetails = (FindStockDetails)stepContext.Options;
 
-            StockDetails.Color = (string)stepContext.Result;
+            StockDetails.Color = CheckForAll((string)stepContext.Result);
 
             if (StockDetails.Size == null)
             {
@@ -108,58 +143,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             return await stepContext.NextAsync(StockDetails.Size, cancellationToken);
         }
-
-
-        private async Task<DialogTurnResult>RouteStockStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            var StockDetails = (FindStockDetails)stepContext.Options;
-
-            StockDetails.Size = (string)stepContext.Result;
-
-            //do call here and redirect if we must relocate stock
-
-            //got all info needed for DB call AI  (build out AI object)
-            StringBuilder getTFGMessageText = new StringBuilder();
-
-            Activity getTFGMessage;
-
-            //grow this out
-            var stockList = _stockRepo.FindStockByFilters(StockDetails).Result;
-            if (stockList.Count == 0)
-            {
-                getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
-
-                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-
-                return await stepContext.EndDialogAsync(StockDetails, cancellationToken);
-            }
-            else
-            {
-                getTFGMessageText.AppendLine("We have the following in stock: ");
-                foreach (var stockItem in stockList)
-                {
-                    getTFGMessageText.AppendLine($"{stockItem.Quantity} at {stockItem.Branch}");
-                }
-
-                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
-
-
-                if (stockList.Count > 1)
-                {
-                    getTFGMessage = MessageFactory.Text(RouteStockStepMsgText, RouteStockStepMsgText, InputHints.ExpectingInput);
-                    return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = getTFGMessage }, cancellationToken);
-                }
-            }
-
-
-            return await stepContext.NextAsync("No", cancellationToken);
-        }
-
-
-
-
+              
         /// <summary>
         /// Routes the stock step asynchronous.
         /// </summary>
@@ -169,9 +153,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private async Task<DialogTurnResult> RouteStockStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var StockDetails = (FindStockDetails)stepContext.Options;
-            StockDetails.Size = (string)stepContext.Result;
-
-            //do call here and redirect if we must relocate stock
+            StockDetails.Size = CheckForAll((string)stepContext.Result);
 
             //got all info needed for DB call AI  (build out AI object)
             StringBuilder getTFGMessageText = new StringBuilder();
@@ -182,7 +164,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             var stockList = _stockRepo.FindStockByFilters(StockDetails).Result;
             if (stockList.Count == 0)
             {
-                getTFGMessageText.AppendLine("Sorry, we DO NOT stock available.");
+                getTFGMessageText.AppendLine("Sorry, we DO NOT have stock available.");
 
                 getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
@@ -191,7 +173,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
             else
             {
-                var messageCard = CreateStockAdaptiveCard(GetFacts(stockList));
+                var messageCard = CreateStockAdaptiveCard(GetFactsInColumns(stockList, StockDetails), StockDetails);
                 var response = MessageFactory.Attachment(messageCard);
                 await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
@@ -233,17 +215,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                     Destination = "Parow",
                 };
 
-            var doroute = (string)stepContext.Result;
-
-            if(doroute.ToUpper() == "YES" || doroute.ToUpper() == "Y")
-            {
-                // Initialize BookingDetails with any entities we may have found in the response.
-                var bookingDetails = new BookingDetails()
-                {
-                    // Get destination and origin from the composite entities arrays.
-                    Destination = "Parow",
-                };
-
                 // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                 return await stepContext.BeginDialogAsync(nameof(BookingDialog), bookingDetails, cancellationToken);
 
@@ -253,13 +224,57 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         }
 
         /// <summary>
+        /// Checks for all.
+        /// </summary>
+        /// <param name="inval">The inval.</param>
+        /// <returns></returns>
+        private string CheckForAll(string inval)
+        {
+            string AllValues = ",ALL,ANY,NONE,";
+
+            if (AllValues.Contains(inval.ToUpper()))
+                return "";
+            else
+                return inval;
+        }
+
+        /// <summary>
         /// Creates the stock adaptive card.
         /// </summary>
         /// <param name="facts">The facts.</param>
         /// <returns></returns>
-        private Attachment CreateStockAdaptiveCard(List<AdaptiveFact> facts)
+        private Attachment CreateStockAdaptiveCard(List<AdaptiveFact> facts, FindStockDetails stockDetails)
         {
             var card = new AdaptiveCard("1.0");
+
+            string FactHeader = "";
+            string SearchValue = $"Garment={stockDetails.Garment}{Environment.NewLine}";
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Brand))
+            {
+                SearchValue = $"{SearchValue}Brand = {stockDetails.Brand}{Environment.NewLine}";
+            }
+            else { FactHeader = $"**Brand** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Style))
+            {
+                SearchValue = $"{SearchValue}Style = {stockDetails.Style}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Style** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Color))
+            {
+                SearchValue = $"{SearchValue}Color = {stockDetails.Color}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Color** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Size))
+            {
+                SearchValue = $"{SearchValue}Size = {stockDetails.Size}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Size**  "; }
+
+
             List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
             {
                 new AdaptiveColumnSet
@@ -286,7 +301,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                 },
                                 new AdaptiveTextBlock
                                 {
-                                    Text = "We have the following in stock:",
+                                    Text = "Based on:" + Environment.NewLine + SearchValue + "We have the following in stock:",
                                     Size = AdaptiveTextSize.Default,
                                     IsSubtle = true,
                                     Wrap = true,
@@ -299,7 +314,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                         new AdaptiveFact
                                         {
                                             Title = "Quantity",
-                                            Value = "**Branch**"
+                                            Value = $"{FactHeader} **Branch**"
                                         }
                                     }
                                 },
@@ -331,20 +346,268 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         }
 
         /// <summary>
+        /// Creates the stock adaptive card.
+        /// </summary>
+        /// <param name="facts">The facts.</param>
+        /// <returns></returns>
+        private Attachment CreateStockAdaptiveCard(List<AdaptiveColumn> facts, FindStockDetails stockDetails)
+        {
+            var card = new AdaptiveCard("1.0");
+
+            string FactHeader = "";
+            StringBuilder searchValue = new StringBuilder();    
+            string SearchValue = $"Garment = {stockDetails.Garment}{Environment.NewLine}";
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Brand))
+            {
+                SearchValue = $"{SearchValue}Brand = {stockDetails.Brand}{Environment.NewLine}";
+            }
+            else { FactHeader = $"**Brand** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Style))
+            {
+                SearchValue = $"{SearchValue}Style = {stockDetails.Style}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Style** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Color))
+            {
+                SearchValue = $"{SearchValue}Color = {stockDetails.Color}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Color** "; }
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Size))
+            {
+                SearchValue = $"{SearchValue}Size = {stockDetails.Size}{Environment.NewLine}";
+            }
+            else { FactHeader = $"{FactHeader} **Size**  "; }
+
+            List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
+            {
+                new AdaptiveColumnSet
+                {
+                    Columns = new List<AdaptiveColumn>()
+                    {
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/chatbot/blob/master/Images/Logo.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "Invetory search",
+                                    Spacing = AdaptiveSpacing.Medium,
+                                    Size = AdaptiveTextSize.Default,
+                                    Weight = AdaptiveTextWeight.Bolder,
+                                    Wrap = true,
+                                    MaxLines = 0
+                                },
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "Based on:" + Environment.NewLine + SearchValue + "We have the following in stock:",
+                                    Size = AdaptiveTextSize.Default,
+                                    IsSubtle = true,
+                                    Wrap = true,
+                                    MaxLines = 0
+                                },
+                                new AdaptiveColumnSet
+                                {
+                                    Columns = facts,
+                                    Bleed = true,
+                                }
+                            },
+                            Separator = true
+                        }
+                    }
+                }
+            };
+
+            AdaptiveContainer container = new AdaptiveContainer
+            {
+                Items = adaptiveElements
+            };
+
+            card.Body.Add(container);
+
+            var attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
+
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates the text block.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        private AdaptiveTextBlock CreateTextBlock(string text)
+        {
+            return new AdaptiveTextBlock
+            {
+                Text = text,
+                Size = AdaptiveTextSize.Default,
+                IsSubtle = true,
+                Wrap = true,
+                MaxLines = 0
+            };
+        }
+
+        /// <summary>
+        /// Gets the facts in columns2.
+        /// </summary>
+        /// <param name="stocks">The stocks.</param>
+        /// <param name="stockDetails">The stock details.</param>
+        /// <returns></returns>
+        private List<AdaptiveColumn> GetFactsInColumns(List<Stock> stocks, FindStockDetails stockDetails)
+        {
+            List<AdaptiveElement> QtyElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> BrandElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> StyleElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> ColourElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> SizeElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> BranchElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> IBTElements = new List<AdaptiveElement>();
+
+            //build the headers items.
+            QtyElements.Add(CreateTextBlock("**Quantity**"));
+            if (string.IsNullOrWhiteSpace(stockDetails.Brand))
+            {
+                BrandElements.Add(CreateTextBlock("**Brand**"));
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Style))
+            {
+                StyleElements.Add(CreateTextBlock("**Style**"));
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Color))
+            {
+                ColourElements.Add(CreateTextBlock("**Colour**"));
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Size))
+            {
+                SizeElements.Add(CreateTextBlock("**Size**"));
+            }
+            BranchElements.Add(CreateTextBlock("**Branch**"));
+            IBTElements.Add(CreateTextBlock("**IBT**"));
+
+            //load all the result items
+            int item = 0;
+            foreach (var stock in stocks)
+            {
+                QtyElements.Add(CreateTextBlock(stock.Quantity.ToString()));
+                if (string.IsNullOrWhiteSpace(stockDetails.Brand))
+                {
+                    BrandElements.Add(CreateTextBlock(stock.Brand));
+                }
+                if (string.IsNullOrWhiteSpace(stockDetails.Style))
+                {
+                    StyleElements.Add(CreateTextBlock(stock.Style));
+                }
+                if (string.IsNullOrWhiteSpace(stockDetails.Color))
+                {
+                    ColourElements.Add(CreateTextBlock(stock.Color));
+                }
+                if (string.IsNullOrWhiteSpace(stockDetails.Size))
+                {
+                    SizeElements.Add(CreateTextBlock(stock.Size));
+                }
+                BranchElements.Add(CreateTextBlock(stock.Branch));
+                IBTElements.Add(
+                    new AdaptiveNumberInput
+                    {
+                        Id = "qtr_" + item++,
+                        Max = stock.Quantity,
+                        Min = 0
+                        
+                    });
+            }
+
+            List<AdaptiveColumn> ColumnList = new List<AdaptiveColumn>();
+            ColumnList.Add(new AdaptiveColumn
+            {
+                Items = QtyElements,
+                Width = AdaptiveColumnWidth.Auto
+            });
+            if (string.IsNullOrWhiteSpace(stockDetails.Brand))
+            {
+                ColumnList.Add(new AdaptiveColumn
+                {
+                    Items = BrandElements,
+                    Width = AdaptiveColumnWidth.Auto
+                });
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Style))
+            {
+                ColumnList.Add(new AdaptiveColumn
+                {
+                    Items = StyleElements,
+                    Width = AdaptiveColumnWidth.Auto
+
+                });
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Color))
+            {
+                ColumnList.Add(new AdaptiveColumn
+                {
+                    Items = ColourElements,
+                    Width = AdaptiveColumnWidth.Auto
+
+                });
+            }
+            if (string.IsNullOrWhiteSpace(stockDetails.Size))
+            {
+                ColumnList.Add(new AdaptiveColumn
+                {
+                    Items = SizeElements,
+                    Width = AdaptiveColumnWidth.Auto
+                });
+            }
+            ColumnList.Add(new AdaptiveColumn
+            {
+                Items = BranchElements,
+                Width = AdaptiveColumnWidth.Auto
+            });
+            ColumnList.Add(new AdaptiveColumn
+            {
+                Items = IBTElements,
+                Width = "40px"
+            });
+
+            return ColumnList;
+        }
+
+        /// <summary>
         /// Gets the facts.
         /// </summary>
         /// <param name="stocks">The stocks.</param>
         /// <returns></returns>
-        private List<AdaptiveFact> GetFacts(List<Stock> stocks)
+        private List<AdaptiveFact> GetFacts(List<Stock> stocks, FindStockDetails stockDetails)
         {
             List<AdaptiveFact> facts = new List<AdaptiveFact>();
             foreach (var stock in stocks)
             {
+                string FactValue = "";
+                
+                if (string.IsNullOrWhiteSpace(stockDetails.Brand))
+                    FactValue = $"{stock.Brand}";
+                if (string.IsNullOrWhiteSpace(stockDetails.Style))
+                    FactValue = $"{FactValue}  :  {stock.Style}";
+                if (string.IsNullOrWhiteSpace(stockDetails.Color))
+                    FactValue = $"{FactValue}  :  {stock.Color}";
+                if (string.IsNullOrWhiteSpace(stockDetails.Size))
+                    FactValue = $"{FactValue}  :  {stock.Size}";
+
                 facts.Add(new AdaptiveFact
                 {
                     Title = stock.Quantity.ToString(),
-                    Value = stock.Branch
-                });
+                    Value = FactValue = $"{FactValue}  :  {stock.Branch}"
+            });
             }
             return facts;
         }

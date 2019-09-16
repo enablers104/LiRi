@@ -1,8 +1,8 @@
 ﻿namespace Microsoft.BotBuilderSamples.DialogModels
-
+{ 
     public class FindHRDetails
     {
-        public string EmployeeNumber { get; set; }
-        public string IdentityNumber { get; set; }
+        public string IdentificationNumber { get; set; }
+        public string QueryType { get; set; }
     }
 }

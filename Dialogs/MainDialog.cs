@@ -15,6 +15,7 @@ using CoreBot.Data;
 using Microsoft.BotBuilderSamples.DialogModels;
 using System.Text;
 
+
 namespace Microsoft.BotBuilderSamples.Dialogs
 {
     public class MainDialog : ComponentDialog
@@ -32,7 +33,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="accountDialog">The account dialog.</param>
         /// <param name="stockRepository">The stock repository.</param>
         /// <param name="logger">The logger.</param>
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, AccountDialog accountDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, HRDialog hrDialog, AccountDialog accountDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
@@ -43,6 +44,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             AddDialog(bookingDialog);
             AddDialog(findStockDialog);
             AddDialog(accountDialog);
+            AddDialog(hrDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -89,11 +91,11 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             }
 
             // Call LUIS and gather any potential booking details. (Note the TurnContext has the response to the prompt.)
-            var luisResult = await _luisRecognizer.RecognizeAsync<LiriStockModel>(stepContext.Context, cancellationToken);
+            var luisResult = await _luisRecognizer.RecognizeAsync<LiriModel>(stepContext.Context, cancellationToken);
 
             switch (luisResult.TopIntent().intent)
             {
-                case LiriStockModel.Intent.BookFlight:
+                case LiriModel.Intent.BookIBT:
                     await ShowWarningForUnsupportedBranches(stepContext.Context, luisResult, cancellationToken);
 
                     // Initialize BookingDetails with any entities we may have found in the response.
@@ -108,7 +110,23 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                     // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(BookingDialog), bookingDetails, cancellationToken);
 
-                case LiriStockModel.Intent.GetWeather:
+                case LiriModel.Intent.TFGAccount:
+
+                    // Initialize BookingDetails with any entities we may have found in the response.
+                    var findAccountDetails = new FindAccountDetails()
+                    {
+                        // Get destination and origin from the composite entities arrays.
+                        CellphoneNumber = luisResult.phonenumber,
+                        FirstName = luisResult.FirstName,
+                        IdentityNumber = luisResult.IDNumber,
+                        LastName = luisResult.LastName,
+                        Title = luisResult.Title,
+                    };
+
+                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
+                    return await stepContext.BeginDialogAsync(nameof(AccountDialog), findAccountDetails, cancellationToken);
+
+                case LiriModel.Intent.GetWeather:
                     // We haven't implemented the GetWeatherDialog so we just display a TODO message.
                     var getWeatherMessageText = "TODO: get weather flow here";
                     var getWeatherMessage = MessageFactory.Text(getWeatherMessageText, getWeatherMessageText, InputHints.IgnoringInput);
@@ -122,8 +140,26 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 //    };
 
                 //    return await stepContext.BeginDialogAsync(nameof(AccountDialog), accountDetails, cancellationToken);
+                case LiriModel.Intent.TFGLegals:
 
-                case LiriStockModel.Intent.TFGStock:
+                    var legal = stepContext.Result;
+                    string msg;
+
+                    if (legal.ToString() == "terms")
+                    {
+                        msg = "[Click for terms and conditions](https://www.tfg.co.za/terms-and-conditions)";
+
+                    }
+                    else { msg = "[Click for privacy statement](https://www.tfg.co.za/privacy-statement)"; }
+
+                    var LegalMessage = MessageFactory.Text(msg, msg, InputHints.IgnoringInput);
+                    await stepContext.Context.SendActivityAsync(LegalMessage, cancellationToken);
+
+                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
+                    //return await stepContext.BeginDialogAsync(nameof(FindStockDialog), legal, cancellationToken);
+                    break;
+
+                case LiriModel.Intent.TFGStock:
                     // We haven't implemented the TFG so we just display a TODO message.
 
                     // Initialize StockDetails with any entities we may have found in the response.
@@ -138,6 +174,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
                     // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(FindStockDialog), stockDetails, cancellationToken);
+
+                case LiriModel.Intent.TFGHR:
+                    var findHRDetails = new FindHRDetails()
+                    {
+                        QueryType = luisResult.QueryType,
+                        IdentificationNumber = luisResult.EmployeeNumber
+                    };
+
+                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
+                    return await stepContext.BeginDialogAsync(nameof(HRDialog), findHRDetails, cancellationToken);
+
 
                 default:
                     // Catch all for unhandled intents
@@ -159,7 +206,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="context">The context.</param>
         /// <param name="luisResult">The luis result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private static async Task ShowWarningForUnsupportedBranches(ITurnContext context, LiriStockModel luisResult, CancellationToken cancellationToken)
+        private static async Task ShowWarningForUnsupportedBranches(ITurnContext context, LiriModel luisResult, CancellationToken cancellationToken)
         {
             var unsupportedBranches = new List<string>();
 

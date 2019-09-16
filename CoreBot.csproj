@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CognitiveModels\FlightBooking.cs" />
+    <Compile Remove="CognitiveModels\FlightBookingEx.cs" />
+    <Compile Remove="CognitiveModels\LiriStockModel.cs" />
+    <Compile Remove="CognitiveModels\LiriStockModelEx.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Cards\welcomeCard.json" />
+    <Content Remove="CognitiveModels\FlightBooking.json" />
+    <Content Remove="CognitiveModels\LiriStock.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -37,6 +37,20 @@ namespace CoreBot.Data
             });
         }
 
+
+
+        /// <summary>
+        /// Finds the brands list.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Stock>> FindBrandList()
+        {
+            return await ExecWithConnAsync(async db => {
+                var resultList = await db.QueryAsync<Stock>($"SELECT DISTINCT Brand FROM dbo.tStock", commandType: System.Data.CommandType.Text).ConfigureAwait(false);
+                return resultList.ToList();
+            });
+        }
+
         /// <summary>
         /// Finds the stock by filters.
         /// </summary>
@@ -65,6 +79,9 @@ namespace CoreBot.Data
 
             if (!string.IsNullOrWhiteSpace(findStockDetails.Size))
                 sql = $"{sql} AND Size = '{findStockDetails.Size}'";
+
+            if (!string.IsNullOrWhiteSpace(findStockDetails.Brand))
+                sql = $"{sql} AND Brand = '{findStockDetails.Brand}'";
 
             return await ExecWithConnAsync(async db => {
                 var resultList = await db.QueryAsync<Stock>(sql, commandType: System.Data.CommandType.Text).ConfigureAwait(false);
