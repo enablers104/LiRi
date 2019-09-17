@@ -3,7 +3,6 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.BotBuilderSamples.DialogModels;
-using Microsoft.BotBuilderSamples.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -99,7 +98,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var hrDetails = (FindHRDetails)stepContext.Options;
-            var messageText = $"You have {new Random().Next(1, 12)} leave days.";
+            var messageText = $"You have **{new Random().Next(1, 12)}** leave days.";
             var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
             await stepContext.Context.SendActivityAsync(message, cancellationToken);
             return await stepContext.EndDialogAsync(hrDetails, cancellationToken);

@@ -355,7 +355,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             var card = new AdaptiveCard("1.0");
 
             string FactHeader = "";
-            StringBuilder searchValue = new StringBuilder();    
             string SearchValue = $"Garment = {stockDetails.Garment}{Environment.NewLine}";
 
             if (!string.IsNullOrWhiteSpace(stockDetails.Brand))

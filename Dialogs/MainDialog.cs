@@ -132,36 +132,24 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                     var getWeatherMessage = MessageFactory.Text(getWeatherMessageText, getWeatherMessageText, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(getWeatherMessage, cancellationToken);
                     break;
-
-                //case LiriStockModel.Intent.TFGAccount:
-                //    var accountDetails = new FindAccountDetails
-                //    {
-
-                //    };
-
-                //    return await stepContext.BeginDialogAsync(nameof(AccountDialog), accountDetails, cancellationToken);
                 case LiriModel.Intent.TFGLegals:
 
                     var legal = stepContext.Result;
-                    string msg;
-
-                    if (legal.ToString() == "terms")
+                    string msgResponse = "HINT: For Legal enquiry (Terms and Conditions or Privacy Statement)";
+                    if (legal.ToString().ToLower().Contains("terms"))
                     {
-                        msg = "[Click for terms and conditions](https://www.tfg.co.za/terms-and-conditions)";
+                        msgResponse = "[Click for terms and conditions](https://www.tfg.co.za/terms-and-conditions)";
 
                     }
-                    else { msg = "[Click for privacy statement](https://www.tfg.co.za/privacy-statement)"; }
-
-                    var LegalMessage = MessageFactory.Text(msg, msg, InputHints.IgnoringInput);
+                    if(legal.ToString().ToLower().Contains("privacy"))
+                    {
+                        msgResponse = "[Click for privacy statement](https://www.tfg.co.za/privacy-statement)";
+                    }
+                    var LegalMessage = MessageFactory.Text(msgResponse, msgResponse, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(LegalMessage, cancellationToken);
-
-                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
-                    //return await stepContext.BeginDialogAsync(nameof(FindStockDialog), legal, cancellationToken);
                     break;
 
                 case LiriModel.Intent.TFGStock:
-                    // We haven't implemented the TFG so we just display a TODO message.
-
                     // Initialize StockDetails with any entities we may have found in the response.
                     var stockDetails = new FindStockDetails()
                     {
@@ -172,7 +160,6 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                         Size = luisResult.Size                
                     };
 
-                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(FindStockDialog), stockDetails, cancellationToken);
 
                 case LiriModel.Intent.TFGHR:
@@ -182,10 +169,15 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                         IdentificationNumber = luisResult.EmployeeNumber
                     };
 
-                    // Run the BookingDialog giving it whatever details we have from the LUIS call, it will fill out the remainder.
                     return await stepContext.BeginDialogAsync(nameof(HRDialog), findHRDetails, cancellationToken);
 
-
+                case LiriModel.Intent.Cancel:
+                    StringBuilder cancelMessageText = new StringBuilder();
+                    cancelMessageText.AppendLine($"Thank you for using LiRi the friendly BOT.");
+                    cancelMessageText.AppendLine($"Good bye!");
+                    var goodByeMessage = MessageFactory.Text(cancelMessageText.ToString(), cancelMessageText.ToString(), InputHints.IgnoringInput);
+                    await stepContext.Context.SendActivityAsync(goodByeMessage, cancellationToken);
+                    break;
                 default:
                     // Catch all for unhandled intents
                     var didntUnderstandMessageText = $"Sorry, I didn't get that. Please try asking in a different way (intent was {luisResult.TopIntent().intent})";

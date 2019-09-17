@@ -180,7 +180,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             if (confirmed)
             {
-                var messageText = $"Your reference number is : {Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
+                var messageText = $"Your reference number is : **{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}**";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
             }
