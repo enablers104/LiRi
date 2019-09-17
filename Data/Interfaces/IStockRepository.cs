@@ -11,7 +11,7 @@ namespace CoreBot.Data.Interfaces
 
         Task<List<Stock>> FindStockByFilters(string color, string garment, string size);
 
-        Task<Stock> FindStockBySkuCode(string skuCode);
+        Task<List<Stock>> FindStockBySkuCode(string skuCode);
 
         Task<List<Stock>> FindStockByFilters(FindStockDetails findStockDetails);
     }

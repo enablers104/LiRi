@@ -29,7 +29,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 QueryTypeAsync,
                 RouteDecisionAsync,
                 FinalStepAsync,
-            }));;
+            }));
             InitialDialogId = nameof(WaterfallDialog);
         }
 

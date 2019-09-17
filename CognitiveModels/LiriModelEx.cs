@@ -63,5 +63,7 @@ namespace Microsoft.BotBuilderSamples
         public string phonenumber => Entities.phonenumber?.FirstOrDefault()?.Split('T')[0];
 
         public string QueryType => Entities.QueryType?.FirstOrDefault()?.Split('T')[0];
+
+        public string SkuCode => Entities.SkuCode?.FirstOrDefault()?.Split('T')[0];
     }
 }

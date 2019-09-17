@@ -33,18 +33,18 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         /// <param name="accountDialog">The account dialog.</param>
         /// <param name="stockRepository">The stock repository.</param>
         /// <param name="logger">The logger.</param>
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, HRDialog hrDialog, AccountDialog accountDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
+        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, FindStockDialog findStockDialog, HRDialog hrDialog, AccountDialog accountDialog, SkuLookupDialog skuLookupDialog, StockRepository stockRepository, ILogger<MainDialog> logger) : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
             _stockRepo = stockRepository;
-
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(bookingDialog);
             AddDialog(findStockDialog);
             AddDialog(accountDialog);
             AddDialog(hrDialog);
+            AddDialog(skuLookupDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -161,6 +161,14 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                     };
 
                     return await stepContext.BeginDialogAsync(nameof(FindStockDialog), stockDetails, cancellationToken);
+
+                case LiriModel.Intent.TFGSkuLookup:
+                    var stock = new FindStockDetails()
+                    {
+                        SkuCode = luisResult.SkuCode
+                    };
+
+                    return await stepContext.BeginDialogAsync(nameof(SkuLookupDialog), stock, cancellationToken);
 
                 case LiriModel.Intent.TFGHR:
                     var findHRDetails = new FindHRDetails()

@@ -26,7 +26,8 @@ namespace Microsoft.BotBuilderSamples
             TFGAccount, 
             TFGHR, 
             TFGStock,
-            TFGLegals
+            TFGLegals,
+            TFGSkuLookup
         };
         [JsonProperty("intents")]
         public Dictionary<Intent, IntentScore> Intents;
@@ -63,6 +64,8 @@ namespace Microsoft.BotBuilderSamples
             public string[][] Branch;
 
             public string[] QueryType;
+
+            public string[] SkuCode;
 
             // Composites
             public class _InstanceFrom
@@ -107,6 +110,7 @@ namespace Microsoft.BotBuilderSamples
                 public InstanceData[] To;
                 public InstanceData[] datetime;
                 public InstanceData[] phonenumber;
+                public InstanceData[] skuCode;
             }
             [JsonProperty("$instance")]
             public _Instance _instance;

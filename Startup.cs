@@ -51,6 +51,9 @@ namespace Microsoft.BotBuilderSamples
             // Register the HRDialogDialog.
             services.AddSingleton<HRDialog>();
 
+            // Register the SkuLookupDialog.
+            services.AddSingleton<SkuLookupDialog>();
+
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();
 

@@ -8,5 +8,6 @@
         public string Style { get; set; }
         public string Brand { get; set; }
         public string RouteStock { get; set; }
+        public string SkuCode { get; set; }
     }
 }

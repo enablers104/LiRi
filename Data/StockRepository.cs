@@ -37,8 +37,6 @@ namespace CoreBot.Data
             });
         }
 
-
-
         /// <summary>
         /// Finds the brands list.
         /// </summary>
@@ -94,12 +92,12 @@ namespace CoreBot.Data
         /// </summary>
         /// <param name="skuCode">The sku code.</param>
         /// <returns></returns>
-        public async Task<Stock> FindStockBySkuCode(string skuCode)
+        public async Task<List<Stock>> FindStockBySkuCode(string skuCode)
         {
             string sql = $"SELECT * FROM dbo.tStock WHERE SkuCode = '{skuCode}'";
             return await ExecWithConnAsync(async db => {
                 var resultList = await db.QueryAsync<Stock>(sql, commandType: System.Data.CommandType.Text).ConfigureAwait(false);
-                return resultList.FirstOrDefault();
+                return resultList.ToList();
             });
         }
 
