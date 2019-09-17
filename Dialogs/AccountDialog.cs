@@ -183,6 +183,10 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 var messageText = $"Your reference number is : **{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}**";
                 var message = MessageFactory.Text(messageText, messageText, InputHints.IgnoringInput);
                 await stepContext.Context.SendActivityAsync(message, cancellationToken);
+
+                var messageCard = CreateConfirmationAdaptiveCard();
+                var response = MessageFactory.Attachment(messageCard);
+                await stepContext.Context.SendActivityAsync(response, cancellationToken);
             }
 
             return await stepContext.EndDialogAsync(accountDetails, cancellationToken);
@@ -251,6 +255,60 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                             Value = $"**{accountDetails.CellphoneNumber}**"
                                         }
                                     }
+                                }
+                            },
+                            Separator = true
+                        }
+                    }
+                }
+            };
+
+            AdaptiveContainer container = new AdaptiveContainer
+            {
+                Items = adaptiveElements
+            };
+
+            card.Body.Add(container);
+
+            var attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
+
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates the confirmation adaptive card.
+        /// </summary>
+        /// <returns></returns>
+        private Attachment CreateConfirmationAdaptiveCard()
+        {
+            var card = new AdaptiveCard("1.0");
+            List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
+            {
+                new AdaptiveColumnSet
+                {
+                    Columns = new List<AdaptiveColumn>()
+                    {
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/TFG_The_One.png?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveTextBlock
+                                {
+                                    Text = "**THE ONE CARD THAT RULES ALL**",
+                                    Spacing = AdaptiveSpacing.Medium,
+                                    Size = AdaptiveTextSize.Default,
+                                    Weight = AdaptiveTextWeight.Bolder,
+                                    Wrap = true,
+                                    MaxLines = 0
                                 }
                             },
                             Separator = true
