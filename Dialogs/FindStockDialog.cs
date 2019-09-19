@@ -81,19 +81,9 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             if (StockDetails.Brand == null)
             {
-                StringBuilder getTFGMessageText = new StringBuilder();
-                Activity getTFGMessage;
-
-                var BrandList = _stockRepo.FindBrandList().Result;
-
-                getTFGMessageText.AppendLine("We have the following Brands: ");
-                foreach (var stockItem in BrandList)
-                {
-                    getTFGMessageText.AppendLine($"{stockItem.Brand}");
-                }
-
-                getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
-                await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
+                var messageCard = CreateBrandAdaptiveCard();
+                var response = MessageFactory.Attachment(messageCard);
+                await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
                 var promptMessage = MessageFactory.Text(BrandStepMsgText, BrandStepMsgText, InputHints.ExpectingInput);
                 return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
@@ -473,9 +463,11 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             List<AdaptiveElement> SizeElements = new List<AdaptiveElement>();
             List<AdaptiveElement> BranchElements = new List<AdaptiveElement>();
             List<AdaptiveElement> IBTElements = new List<AdaptiveElement>();
+            List<AdaptiveElement> SkuElements = new List<AdaptiveElement>();
 
             //build the headers items.
             QtyElements.Add(CreateTextBlock("**Quantity**"));
+            SkuElements.Add(CreateTextBlock("**SKU**"));
             if (string.IsNullOrWhiteSpace(stockDetails.Brand))
             {
                 BrandElements.Add(CreateTextBlock("**Brand**"));
@@ -500,6 +492,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             foreach (var stock in stocks)
             {
                 QtyElements.Add(CreateTextBlock(stock.Quantity.ToString()));
+                SkuElements.Add(CreateTextBlock(stock.SkuCode.ToString()));
                 if (string.IsNullOrWhiteSpace(stockDetails.Brand))
                 {
                     BrandElements.Add(CreateTextBlock(stock.Brand));
@@ -531,6 +524,11 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             ColumnList.Add(new AdaptiveColumn
             {
                 Items = QtyElements,
+                Width = AdaptiveColumnWidth.Auto
+            });
+            ColumnList.Add(new AdaptiveColumn
+            {
+                Items = SkuElements,
                 Width = AdaptiveColumnWidth.Auto
             });
             if (string.IsNullOrWhiteSpace(stockDetails.Brand))
@@ -609,6 +607,135 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             });
             }
             return facts;
+        }
+
+        /// <summary>
+        /// Creates the brand adaptive card.
+        /// </summary>
+        /// <returns></returns>
+        private Attachment CreateBrandAdaptiveCard()
+        {
+            var card = new AdaptiveCard("1.0");
+            List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
+            {
+                new AdaptiveColumnSet
+                {
+                    Columns = new List<AdaptiveColumn>()
+                    {
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/Foschini.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/markham.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/fabiani.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/sportscene.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/g-star-raw.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                            },
+                            Separator = true
+                        },
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/american-swiss.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/at_home.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/charles_keith.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/donna.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/mat_may.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                            },
+                            Separator = true
+                        },
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/sterns.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/the_fix.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/totalsports_bw.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/hi.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/soda_bloc.png?raw=true"),
+                                    Size = AdaptiveImageSize.Small
+                                },
+                            },
+                            Separator = true
+                        }
+                    }
+                }
+            };
+
+            AdaptiveContainer container = new AdaptiveContainer
+            {
+                Items = adaptiveElements
+            };
+
+            card.Body.Add(container);
+
+            var attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
+
+            return attachment;
         }
     }
 }

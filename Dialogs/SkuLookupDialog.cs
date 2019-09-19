@@ -68,6 +68,8 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         {
             var stockDetails = (FindStockDetails)stepContext.Options;
 
+            stockDetails.SkuCode = (string)stepContext.Result;
+
             //got all info needed for DB call AI  (build out AI object)
             StringBuilder getTFGMessageText = new StringBuilder();
 
@@ -89,7 +91,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 var response = MessageFactory.Attachment(messageCard);
                 await stepContext.Context.SendActivityAsync(response, cancellationToken);
 
-                if (stock.Count > 1)
+                if (stock.Count > 0)
                 {
                     getTFGMessage = MessageFactory.Text(RouteStockStepMsgText, RouteStockStepMsgText, InputHints.ExpectingInput);
                     return await stepContext.PromptAsync(nameof(ConfirmPrompt), new PromptOptions { Prompt = getTFGMessage }, cancellationToken);
@@ -145,7 +147,14 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             var card = new AdaptiveCard("1.0");
 
             string FactHeader = "";
-            string SearchValue = $"Garment = {stockDetails.Garment}{Environment.NewLine}";
+            string SearchValue = $"Sku = {stockDetails.SkuCode}{Environment.NewLine}";
+            SearchValue = $"{SearchValue}**The product details are:**{Environment.NewLine}";
+
+            if (!string.IsNullOrWhiteSpace(stockDetails.Garment))
+            {
+                SearchValue = $"{SearchValue}Garment = {stockDetails.Garment}{Environment.NewLine}";
+            }
+            else { FactHeader = $"**Garment** "; }
 
             if (!string.IsNullOrWhiteSpace(stockDetails.Brand))
             {
@@ -170,6 +179,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                 SearchValue = $"{SearchValue}Size = {stockDetails.Size}{Environment.NewLine}";
             }
             else { FactHeader = $"{FactHeader} **Size**  "; }
+
 
             List<AdaptiveElement> adaptiveElements = new List<AdaptiveElement>()
             {
@@ -197,7 +207,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                 },
                                 new AdaptiveTextBlock
                                 {
-                                    Text = "Based on:" + Environment.NewLine + SearchValue + "We have the following in stock:",
+                                    Text = "Based on:" + Environment.NewLine + SearchValue + "**We have the following stock in the following branches:**",
                                     Size = AdaptiveTextSize.Default,
                                     IsSubtle = true,
                                     Wrap = true,
@@ -240,31 +250,17 @@ namespace Microsoft.BotBuilderSamples.Dialogs
         private List<AdaptiveColumn> GetFactsInColumns(List<Stock> stocks, FindStockDetails stockDetails)
         {
             List<AdaptiveElement> QtyElements = new List<AdaptiveElement>();
-            List<AdaptiveElement> BrandElements = new List<AdaptiveElement>();
-            List<AdaptiveElement> StyleElements = new List<AdaptiveElement>();
-            List<AdaptiveElement> ColourElements = new List<AdaptiveElement>();
             List<AdaptiveElement> SizeElements = new List<AdaptiveElement>();
             List<AdaptiveElement> BranchElements = new List<AdaptiveElement>();
             List<AdaptiveElement> IBTElements = new List<AdaptiveElement>();
 
             //build the headers items.
             QtyElements.Add(CreateTextBlock("**Quantity**"));
-            if (string.IsNullOrWhiteSpace(stockDetails.Brand))
-            {
-                BrandElements.Add(CreateTextBlock("**Brand**"));
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Style))
-            {
-                StyleElements.Add(CreateTextBlock("**Style**"));
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Color))
-            {
-                ColourElements.Add(CreateTextBlock("**Colour**"));
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Size))
-            {
-                SizeElements.Add(CreateTextBlock("**Size**"));
-            }
+            stockDetails.Garment = stocks[0].Garment;
+            stockDetails.Brand = stocks[0].Brand;
+            stockDetails.Style = stocks[0].Style;
+            stockDetails.Color = stocks[0].Color;
+            stockDetails.Size = stocks[0].Size;
             BranchElements.Add(CreateTextBlock("**Branch**"));
             IBTElements.Add(CreateTextBlock("**IBT**"));
 
@@ -272,19 +268,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             int item = 0;
             foreach (var stock in stocks)
             {
-                QtyElements.Add(CreateTextBlock(stock.Quantity.ToString()));
-                if (string.IsNullOrWhiteSpace(stockDetails.Brand))
-                {
-                    BrandElements.Add(CreateTextBlock(stock.Brand));
-                }
-                if (string.IsNullOrWhiteSpace(stockDetails.Style))
-                {
-                    StyleElements.Add(CreateTextBlock(stock.Style));
-                }
-                if (string.IsNullOrWhiteSpace(stockDetails.Color))
-                {
-                    ColourElements.Add(CreateTextBlock(stock.Color));
-                }
+                QtyElements.Add(CreateTextBlock(stock.Quantity.ToString()));                
                 if (string.IsNullOrWhiteSpace(stockDetails.Size))
                 {
                     SizeElements.Add(CreateTextBlock(stock.Size));
@@ -305,41 +289,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
             {
                 Items = QtyElements,
                 Width = AdaptiveColumnWidth.Auto
-            });
-            if (string.IsNullOrWhiteSpace(stockDetails.Brand))
-            {
-                ColumnList.Add(new AdaptiveColumn
-                {
-                    Items = BrandElements,
-                    Width = AdaptiveColumnWidth.Auto
-                });
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Style))
-            {
-                ColumnList.Add(new AdaptiveColumn
-                {
-                    Items = StyleElements,
-                    Width = AdaptiveColumnWidth.Auto
-
-                });
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Color))
-            {
-                ColumnList.Add(new AdaptiveColumn
-                {
-                    Items = ColourElements,
-                    Width = AdaptiveColumnWidth.Auto
-
-                });
-            }
-            if (string.IsNullOrWhiteSpace(stockDetails.Size))
-            {
-                ColumnList.Add(new AdaptiveColumn
-                {
-                    Items = SizeElements,
-                    Width = AdaptiveColumnWidth.Auto
-                });
-            }
+            });            
             ColumnList.Add(new AdaptiveColumn
             {
                 Items = BranchElements,

@@ -299,11 +299,11 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                 new AdaptiveImage
                                 {
                                     Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/TFG_The_One.png?raw=true"),
-                                    Size = AdaptiveImageSize.Large
+                                    Size = AdaptiveImageSize.Stretch
                                 },
                                 new AdaptiveTextBlock
                                 {
-                                    Text = "**THE ONE CARD THAT RULES ALL**",
+                                    Text = "**CONGRATS! YOU ARE NOW THE ONE**",
                                     Spacing = AdaptiveSpacing.Medium,
                                     Size = AdaptiveTextSize.Default,
                                     Weight = AdaptiveTextWeight.Bolder,
