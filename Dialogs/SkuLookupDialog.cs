@@ -198,7 +198,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                 },
                                 new AdaptiveTextBlock
                                 {
-                                    Text = "Invetory search",
+                                    Text = "Inventory search",
                                     Spacing = AdaptiveSpacing.Medium,
                                     Size = AdaptiveTextSize.Default,
                                     Weight = AdaptiveTextWeight.Bolder,

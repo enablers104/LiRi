@@ -236,22 +236,22 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                         },
                                         new AdaptiveFact
                                         {
-                                            Title = "FirstName",
+                                            Title = "First Name",
                                             Value = $"**{accountDetails.FirstName}**"
                                         },
                                         new AdaptiveFact
                                         {
-                                            Title = "LastName",
+                                            Title = "Last Name",
                                             Value = $"**{accountDetails.LastName}**"
                                         },
                                         new AdaptiveFact
                                         {
-                                            Title = "IdentityNumber",
+                                            Title = "Identity Number",
                                             Value = $"**{accountDetails.IdentityNumber}**"
                                         },
                                         new AdaptiveFact
                                         {
-                                            Title = "CellphoneNumber",
+                                            Title = "Cellphone Number",
                                             Value = $"**{accountDetails.CellphoneNumber}**"
                                         }
                                     }

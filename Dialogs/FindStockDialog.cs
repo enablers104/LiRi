@@ -81,6 +81,19 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             if (StockDetails.Brand == null)
             {
+                //StringBuilder getTFGMessageText = new StringBuilder();
+                //Activity getTFGMessage;
+
+                //var BrandList = _stockRepo.FindBrandList().Result;
+
+                //getTFGMessageText.AppendLine("We have the following Brands: ");
+                //foreach (var stockItem in BrandList)
+                //{
+                //    getTFGMessageText.AppendLine($"{stockItem.Brand}");
+                //}
+
+                //getTFGMessage = MessageFactory.Text(getTFGMessageText.ToString(), getTFGMessageText.ToString(), InputHints.IgnoringInput);
+                //await stepContext.Context.SendActivityAsync(getTFGMessage, cancellationToken);
                 var messageCard = CreateBrandAdaptiveCard();
                 var response = MessageFactory.Attachment(messageCard);
                 await stepContext.Context.SendActivityAsync(response, cancellationToken);
@@ -388,7 +401,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                                 },
                                 new AdaptiveTextBlock
                                 {
-                                    Text = "Invetory search",
+                                    Text = "Inventory search",
                                     Spacing = AdaptiveSpacing.Medium,
                                     Size = AdaptiveTextSize.Default,
                                     Weight = AdaptiveTextWeight.Bolder,
@@ -628,93 +641,94 @@ namespace Microsoft.BotBuilderSamples.Dialogs
                             {
                                 new AdaptiveImage
                                 {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/Foschini.jpg?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/markham.jpg?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/fabiani.jpg?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/sportscene.jpg?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/g-star-raw.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                            },
-                            Separator = true
-                        },
-                        new AdaptiveColumn
-                        {
-                            Items = new List<AdaptiveElement>
-                            {
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/american-swiss.jpg?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/at_home.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/charles_keith.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/donna.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/mat_may.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                            },
-                            Separator = true
-                        },
-                        new AdaptiveColumn
-                        {
-                            Items = new List<AdaptiveElement>
-                            {
-                                new AdaptiveImage
-                                {
                                     Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/sterns.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
+                                    Size = AdaptiveImageSize.Large
                                 },
                                 new AdaptiveImage
                                 {
                                     Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/the_fix.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
-                                },
-                                new AdaptiveImage
-                                {
-                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/totalsports_bw.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
+                                    Size = AdaptiveImageSize.Large
                                 },
                                 new AdaptiveImage
                                 {
                                     Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/hi.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/g-star-raw.png?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+
+                            },
+                            Separator = true
+                        },
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                //new AdaptiveImage
+                                //{
+                                //    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/american-swiss.jpg?raw=true"),
+                                //    Size = AdaptiveImageSize.Large
+                                //},
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/at_home.png?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                //new AdaptiveImage
+                                //{
+                                //    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/charles_keith.png?raw=true"),
+                                //    Size = AdaptiveImageSize.Large
+                                //},
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/donna.png?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/mat_may.png?raw=true"),
+                                    Size = AdaptiveImageSize.Large
                                 },
                                 new AdaptiveImage
                                 {
                                     Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/soda_bloc.png?raw=true"),
-                                    Size = AdaptiveImageSize.Small
+                                    Size = AdaptiveImageSize.Large
                                 },
+                            },
+                            Separator = true
+                        },
+                        new AdaptiveColumn
+                        {
+                            Items = new List<AdaptiveElement>
+                            {
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/markham.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/fabiani.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/sportscene.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                new AdaptiveImage
+                                {
+                                    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/Foschini.jpg?raw=true"),
+                                    Size = AdaptiveImageSize.Large
+                                },
+                                //new AdaptiveImage
+                                //{
+                                //    Url = new Uri("https://github.com/enablers104/LiRi/blob/master/Images/totalsports_bw.png?raw=true"),
+                                //    Size = AdaptiveImageSize.Large
+                                //},
                             },
                             Separator = true
                         }
